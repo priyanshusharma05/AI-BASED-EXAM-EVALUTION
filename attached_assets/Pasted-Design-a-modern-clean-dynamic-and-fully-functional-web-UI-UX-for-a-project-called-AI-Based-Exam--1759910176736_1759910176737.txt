@@ -1,0 +1,97 @@
+Design a modern, clean, dynamic, and fully functional web UI/UX for a project called “AI-Based Exam Evaluation System.”
+
+The system has two user roles: Teacher and Student.
+The UI should be built only with HTML, CSS, and JavaScript, fully responsive, interactive, and visually engaging.
+All buttons, links, pages, forms, animations, login/signup, and dashboard features must work perfectly.
+
+🎯 Key Objectives:
+
+Create a user-friendly, intuitive layout with smooth navigation.
+
+Use modern AI-inspired colors (blues, purples, whites) and soft gradients.
+
+Include dynamic animations, hover effects, modals, and smooth page transitions using CSS and JS.
+
+Make the UI fully responsive across desktops, tablets, and mobiles.
+
+Ensure all buttons and forms (login, signup, upload, submit, review) are functional and simulate real interactions.
+
+👩‍🏫 Teacher Dashboard Features:
+
+Upload and manage question papers/exam materials.
+
+Evaluate student submissions using AI-based evaluation simulation.
+
+Monitor ongoing exams and student progress in real-time.
+
+Review submissions and provide feedback.
+
+Visualize student performance using dynamic charts, cards, and progress bars.
+
+All dashboard buttons (upload, evaluate, monitor, review) must work seamlessly with JS interactions.
+
+🧑‍🎓 Student Dashboard Features:
+
+Take exams with timer, question navigation, and dynamic exam interface.
+
+Upload exam submissions with exam-related details.
+
+View AI-generated results, feedback, and performance analytics.
+
+Access past exams, scores, and progress tracking charts.
+
+All student dashboard options (upload, view results, feedback, exam details) must function properly with JS.
+
+💡 Core UI Components:
+
+Landing Page → Animated header with tagline “Smarter Evaluation Through AI”.
+
+Login/Signup Page → Functional role-based login (Teacher/Student) with smooth transitions.
+
+Dashboards → Sidebar navigation, stat cards, dynamic charts, upload & review sections.
+
+Exam Page (Student) → Timer, question navigation, upload submission, and interactive elements.
+
+Results Page → Charts, score cards, feedback display, and performance insights.
+
+Dark/Light Mode Toggle → Fully functional and responsive.
+
+🌈 Design & Interaction Guidelines:
+
+Rounded corners, shadows, hover animations, subtle transitions, and micro-interactions for buttons and progress indicators.
+
+Dynamic JS-based interactions (modals, tabs, sliders, charts, file uploads).
+
+Responsive layout using CSS Flexbox/Grid.
+
+Typography: Clean fonts like Poppins, Inter, or Montserrat.
+
+Ensure all forms, buttons, uploads, evaluation, monitoring, review, and feedback features simulate real interactions properly.
+
+🧠 Your Role (UI/UX Designer):
+
+Provide UI/UX suggestions for intuitive, engaging, and user-friendly layouts.
+
+Enhance visual design: colors, layout balance, responsiveness, animations.
+
+Refine frontend visuals and test UI functionality for both Teacher and Student dashboards.
+
+🧩 Expected Output:
+
+Complete, functional, and responsive UI using only HTML, CSS, and JavaScript.
+
+All screens and components functional:
+
+Landing Page
+
+Login/Signup Page (fully functional)
+
+Teacher Dashboard (upload, evaluation, monitoring, review working perfectly)
+
+Student Dashboard (exam, upload, results, feedback fully functional)
+
+Exam Page (interactive and functional)
+
+Results & Feedback Page
+
+Consistent color palette, typography, animation system, and interactive components across all pages.
