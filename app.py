@@ -3,6 +3,7 @@ from flask_cors import CORS
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 import os
+import datetime
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -20,20 +21,29 @@ uploads = db["uploads"]
 # UPLOAD FOLDER CONFIG
 # ==============================
 UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(os.path.join(UPLOAD_FOLDER, "keys"), exist_ok=True)
-os.makedirs(os.path.join(UPLOAD_FOLDER, "answers"), exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+KEY_FOLDER = os.path.join(UPLOAD_FOLDER, "keys")
+ANSWER_FOLDER = os.path.join(UPLOAD_FOLDER, "answers")
+DESCRIPTIVE_FOLDER = os.path.join(ANSWER_FOLDER, "Descriptive")
+OMR_FOLDER = os.path.join(ANSWER_FOLDER, "OMR")
 
+# Create all directories if they don’t exist
+for folder in [KEY_FOLDER, DESCRIPTIVE_FOLDER, OMR_FOLDER]:
+    os.makedirs(folder, exist_ok=True)
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
 
-
 # ==============================
-# HELPER FUNCTION
+# HELPER FUNCTIONS
 # ==============================
 def allowed_file(filename):
     """Check if file extension is allowed"""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def get_file_url(folder, subfolder, filename):
+    """Generate accessible file URL"""
+    return f"http://127.0.0.1:5000/uploads/{folder}/{subfolder}/{filename}"
 
 
 # ==============================
@@ -82,11 +92,11 @@ def login():
     if not user:
         return jsonify({"error": "Invalid email, password, or role ❌"}), 401
 
-    # Redirect based on role
-    if user["role"] == "teacher":
-        redirect_url = "http://127.0.0.1:5500/teacher-dashboard.html"
-    else:
-        redirect_url = "http://127.0.0.1:5500/student-dashboard.html"
+    redirect_url = (
+        "http://127.0.0.1:5500/teacher-dashboard.html"
+        if user["role"] == "teacher"
+        else "http://127.0.0.1:5500/student-dashboard.html"
+    )
 
     return jsonify({
         "message": f"Welcome back, {user['fullname']}! ✅",
@@ -105,14 +115,16 @@ def upload_key():
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        save_path = os.path.join(app.config["UPLOAD_FOLDER"], "keys", filename)
+        save_path = os.path.join(KEY_FOLDER, filename)
         file.save(save_path)
 
         uploads.insert_one({
             "type": "answer_key",
             "uploaded_by": teacher,
             "filename": filename,
-            "path": save_path
+            "path": save_path,
+            "file_url": f"http://127.0.0.1:5000/uploads/keys/{filename}",
+            "timestamp": datetime.datetime.now().isoformat()
         })
 
         return jsonify({"message": "Answer key uploaded successfully ✅"}), 201
@@ -128,23 +140,29 @@ def upload_answer():
         return jsonify({"error": "No files uploaded"}), 400
 
     # Form fields
-    exam_name = request.form.get("exam_name")
-    subject = request.form.get("subject")
-    roll_number = request.form.get("roll_number")
+    exam_name = request.form.get("exam_name", "Untitled Exam")
+    subject = request.form.get("subject", "N/A")
+    roll_number = request.form.get("roll_number", "Unknown")
     notes = request.form.get("notes", "")
+    sheet_type = request.form.get("answer_sheet_type", "Descriptive")  # NEW FIELD
+
+    # Choose folder based on answer sheet type
+    if sheet_type == "OMR":
+        folder_path = OMR_FOLDER
+    else:
+        folder_path = DESCRIPTIVE_FOLDER
 
     uploaded_files = request.files.getlist("files[]")
     saved_files = []
-
-    upload_dir = os.path.join(app.config["UPLOAD_FOLDER"], "answers")
-    os.makedirs(upload_dir, exist_ok=True)
+    file_urls = []
 
     for file in uploaded_files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            save_path = os.path.join(upload_dir, filename)
+            save_path = os.path.join(folder_path, filename)
             file.save(save_path)
             saved_files.append(filename)
+            file_urls.append(get_file_url("answers", sheet_type, filename))
 
     # Save record to MongoDB
     uploads.insert_one({
@@ -153,13 +171,25 @@ def upload_answer():
         "subject": subject,
         "roll_number": roll_number,
         "notes": notes,
-        "files": saved_files
+        "answer_sheet_type": sheet_type,
+        "files": saved_files,
+        "file_urls": file_urls,
+        "timestamp": datetime.datetime.now().isoformat()
     })
 
     return jsonify({
-        "message": f"{len(saved_files)} answer sheet(s) uploaded successfully ✅",
+        "message": f"{len(saved_files)} {sheet_type} answer sheet(s) uploaded successfully ✅",
         "files": saved_files
     }), 201
+
+
+# ---------- TEACHER VIEW STUDENT SUBMISSIONS ----------
+@app.route("/api/student-submissions", methods=["GET"])
+def get_student_submissions():
+    """Return all student uploads for teacher view"""
+    submissions = list(uploads.find({"type": "answer_sheet"}, {"_id": 0}))
+    submissions.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    return jsonify({"submissions": submissions}), 200
 
 
 # ---------- EVALUATION ----------
@@ -176,9 +206,11 @@ def get_exams():
 
 
 # ---------- SERVE UPLOADED FILES ----------
-@app.route("/uploads/<path:filename>")
-def uploaded_file(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+@app.route("/uploads/<folder>/<subfolder>/<filename>")
+def uploaded_file(folder, subfolder, filename):
+    """Serve uploaded files (answer keys or answer sheets)"""
+    folder_path = os.path.join(app.config["UPLOAD_FOLDER"], folder, subfolder)
+    return send_from_directory(folder_path, filename)
 
 
 # ==============================
