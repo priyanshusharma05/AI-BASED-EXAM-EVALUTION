@@ -1,54 +1,169 @@
-const API_BASE = "http://172.16.56.61:5000/api";
+// ------------------------------
+// DASHBOARD.JS (Unified for Teacher & Student)
+// ------------------------------
 
-// ✅ Upload Answer Key (Teacher)
-document.getElementById('answerKeyForm')?.addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const fileInput = document.getElementById('answerKeyFile');
-  const file = fileInput.files[0];
-  const teacher = localStorage.getItem('userEmail');
+// ==============================
+// SECTION SWITCHING
+// ==============================
+function showSection(sectionId) {
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById(sectionId).classList.add('active');
 
-  if (!file) return alert("Please select a file first.");
+    // Update section title dynamically
+    const titles = {
+        'overview': 'Dashboard Overview',
+        'upload-key': 'Upload Answer Key',
+        'submissions': 'View Submissions',
+        'evaluate': 'Evaluate Sheets',
+        'review': 'Review Results',
+        'upload': 'Upload Answer Sheet',
+        'results': 'View Results',
+        'performance': 'Performance Analytics'
+    };
+    const titleElement = document.getElementById('section-title');
+    if (titleElement) {
+        titleElement.textContent = titles[sectionId] || 'Dashboard Overview';
+    }
+}
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("teacher", teacher);
+// ==============================
+// TEACHER: UPLOAD ANSWER KEY
+// ==============================
+const answerKeyForm = document.getElementById('answerKeyForm');
+if (answerKeyForm) {
+    const answerKeyFileInput = document.getElementById('answerKeyFile');
+    const preview = document.getElementById('answerKeyPreview');
+    const previewImage = document.getElementById('answerKeyImage');
+    const previewFileName = document.getElementById('answerKeyFileName');
 
-  try {
-    const res = await fetch(`${API_BASE}/upload-key`, {
-      method: "POST",
-      body: formData
+    // File preview
+    answerKeyFileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            preview.style.display = 'block';
+            previewFileName.textContent = file.name;
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.src = '';
+            }
+        }
     });
 
-    const data = await res.json();
-    alert(data.message || data.error);
-  } catch (error) {
-    alert("Upload failed: " + error.message);
-  }
-});
+    // Upload form handler
+    answerKeyForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const file = answerKeyFileInput.files[0];
+        if (!file) {
+            alert('Please select a file to upload!');
+            return;
+        }
 
-// ✅ Upload Answer Sheets (Student)
-document.getElementById('answerSheetForm')?.addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const files = document.getElementById('answerSheetFile').files;
-  const student = localStorage.getItem('userEmail');
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('teacher', localStorage.getItem('userEmail') || 'Unknown');
 
-  if (files.length === 0) return alert("Please select at least one file.");
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/upload-key', {
+                method: 'POST',
+                body: formData
+            });
 
-  const formData = new FormData();
-  for (let i = 0; i < files.length; i++) {
-    formData.append("files[]", files[i]);
-  }
-  formData.append("student", student);
+            const data = await response.json();
+            if (response.ok) {
+                alert('✅ ' + data.message);
+                answerKeyForm.reset();
+                preview.style.display = 'none';
+            } else {
+                alert('❌ ' + (data.error || 'Upload failed'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('⚠️ Error connecting to the server.');
+        }
+    });
+}
 
-  try {
-    const res = await fetch(`${API_BASE}/upload-sheet`, {
-      method: "POST",
-      body: formData
+// ==============================
+// STUDENT: UPLOAD ANSWER SHEET
+// ==============================
+const answerSheetForm = document.getElementById('answerSheetForm');
+if (answerSheetForm) {
+    const answerSheetFileInput = document.getElementById('answerSheetFile');
+    const previewContainer = document.getElementById('answerSheetPreview');
+    const imageGallery = document.getElementById('imageGallery');
+
+    // File preview for multiple images
+    answerSheetFileInput.addEventListener('change', function() {
+        imageGallery.innerHTML = ''; // Clear old previews
+        const files = Array.from(this.files);
+        if (files.length > 0) {
+            previewContainer.style.display = 'block';
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.classList.add('preview-thumb');
+                        imageGallery.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        } else {
+            previewContainer.style.display = 'none';
+        }
     });
 
-    const data = await res.json();
-    alert(data.message || data.error);
-  } catch (error) {
-    alert("Upload failed: " + error.message);
-  }
-});
+    // Upload handler
+    answerSheetForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const files = answerSheetFileInput.files;
+        if (!files.length) {
+            alert('Please select files to upload!');
+            return;
+        }
+
+        // Collect extra info
+        const examName = document.getElementById('examName')?.value || '';
+        const subject = document.getElementById('subject')?.value || '';
+        const rollNumber = document.getElementById('rollNumber')?.value || '';
+        const notes = document.getElementById('notes')?.value || '';
+
+        const formData = new FormData();
+        Array.from(files).forEach(file => formData.append('files[]', file));
+        formData.append('exam_name', examName);
+        formData.append('subject', subject);
+        formData.append('roll_number', rollNumber);
+        formData.append('notes', notes);
+
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/upload-answer', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert('✅ ' + data.message);
+                answerSheetForm.reset();
+                previewContainer.style.display = 'none';
+                imageGallery.innerHTML = '';
+            } else {
+                alert('❌ ' + (data.error || 'Upload failed'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('⚠️ Error connecting to the server.');
+        }
+    });
+}

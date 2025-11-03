@@ -1,104 +1,41 @@
+// ✅ Listen for login form submission
+document.getElementById("loginForm").addEventListener("submit", async function (event) {
+    event.preventDefault(); // prevent page reload
 
-const BASE_URL = "http://127.0.0.1:5000";
+    // Get input values
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const role = document.querySelector('input[name="role"]:checked')?.value;
 
-function showAlert(msg) {
-  alert(msg);
-}
-
-async function postJson(url, body) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data };
-}
-
-// --- LOGIN ---
-document.getElementById("loginForm")?.addEventListener("submit", async function (e) {
-  e.preventDefault();
-
-  // If your login page uses different ids, update these selectors
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const roleInput = document.querySelector('input[name="role"]:checked');
-  const role = roleInput ? roleInput.value : "student";
-
-  if (!email || !password) {
-    showAlert("Please provide email and password.");
-    return;
-  }
-
-  try {
-    const { ok, status, data } = await postJson(`${BASE_URL}/api/login`, {
-      email,
-      password,
-      role,
-    });
-
-    if (ok) {
-      // login success: store minimal user data and redirect
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("userRole", role);
-      localStorage.setItem("userName", data.name || data.fullname || "");
-
-      showAlert(data.message || "Logged in successfully!");
-
-      // redirect based on role
-      if (role === "teacher") window.location.href = "teacher-dashboard.html";
-      else window.location.href = "student-dashboard.html";
-    } else {
-      // show backend message if present
-      showAlert(data.error || data.message || `Login failed (status ${status})`);
-      console.warn("Login response:", status, data);
+    if (!email || !password || !role) {
+        alert("⚠️ Please fill in all fields.");
+        return;
     }
-  } catch (err) {
-    console.error("Login fetch error:", err);
-    showAlert("Network or server error. Check console for details.");
-  }
-});
 
-// --- SIGNUP ---
-document.getElementById("signupForm")?.addEventListener("submit", async function (e) {
-  e.preventDefault();
+    try {
+        // Send login request to Flask backend
+        const response = await fetch("http://127.0.0.1:5000/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, role }),
+        });
 
-  const fullname = document.getElementById("fullname").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const roleInput = document.querySelector('input[name="role"]:checked');
-  const role = roleInput ? roleInput.value : "student";
+        const data = await response.json();
 
-  if (!fullname || !email || !password) {
-    showAlert("Please fill all the fields.");
-    return;
-  }
+        if (response.ok) {
+            alert(data.message);
 
-  try {
-    // backend expects 'fullname' field in signup (see app.py)
-    const { ok, status, data } = await postJson(`${BASE_URL}/api/signup`, {
-      fullname,
-      email,
-      password,
-      role,
-    });
-
-    if (ok || status === 201) {
-      // success
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("userRole", role);
-      localStorage.setItem("userName", fullname);
-
-      showAlert(data.message || "Signup successful!");
-
-      if (role === "teacher") window.location.href = "teacher-dashboard.html";
-      else window.location.href = "student-dashboard.html";
-    } else {
-      showAlert(data.error || data.message || `Signup failed (status ${status})`);
-      console.warn("Signup response:", status, data);
+            // ✅ Redirect to the correct dashboard
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                alert("No redirect URL provided by server.");
+            }
+        } else {
+            alert(data.error || "❌ Login failed. Please check your credentials.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("🚫 Server not reachable. Please ensure Flask is running on port 5000.");
     }
-  } catch (err) {
-    console.error("Signup fetch error:", err);
-    showAlert("Network or server error. Check console for details.");
-  }
 });
