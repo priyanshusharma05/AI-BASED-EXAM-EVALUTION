@@ -6,7 +6,42 @@
     <title>Login - AI Evaluator</title>
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/auth.css">
+    <style>
+        /* 🔹 Inline style just for clarity (move to CSS file if needed) */
+        .role-selection {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .role-card {
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 15px 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 120px;
+        }
+        .role-card:hover {
+            border-color: #6a0dad;
+            background-color: #f8f0ff;
+        }
+        .role-card.selected {
+            border-color: #6a0dad;
+            background-color: #f3e8ff;
+            box-shadow: 0 0 10px rgba(106, 13, 173, 0.3);
+        }
+        .role-icon {
+            font-size: 30px;
+        }
+        .role-name {
+            margin-top: 5px;
+            font-weight: 600;
+        }
+    </style>
 </head>
+
 <body>
     <div class="theme-toggle" onclick="toggleTheme()">
         <span id="theme-icon">🌙</span>
@@ -33,21 +68,15 @@
 
                     <div class="form-group">
                         <label>Login As</label>
-                        <div class="role-selector">
-                            <label class="role-option">
-                                <input type="radio" name="role" value="teacher" checked>
-                                <div class="role-card">
-                                    <div class="role-icon">👨‍🏫</div>
-                                    <div class="role-name">Teacher</div>
-                                </div>
-                            </label>
-                            <label class="role-option">
-                                <input type="radio" name="role" value="student">
-                                <div class="role-card">
-                                    <div class="role-icon">🎓</div>
-                                    <div class="role-name">Student</div>
-                                </div>
-                            </label>
+                        <div class="role-selection">
+                            <div class="role-card" data-role="teacher" onclick="selectRole(this)">
+                                <div class="role-icon">👨‍🏫</div>
+                                <div class="role-name">Teacher</div>
+                            </div>
+                            <div class="role-card" data-role="student" onclick="selectRole(this)">
+                                <div class="role-icon">🎓</div>
+                                <div class="role-name">Student</div>
+                            </div>
                         </div>
                     </div>
 
