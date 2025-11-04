@@ -249,6 +249,99 @@ async function loadStudentSubmissions() {
         container.innerHTML = "<p>⚠️ Failed to load submissions.</p>";
     }
 }
+// ========== TEACHER EVALUATION PANEL ==========
+async function loadPendingSubmissions() {
+    const grid = document.getElementById("pendingSubmissionsGrid");
+    if (!grid) return;
+    grid.innerHTML = "<p>⏳ Loading pending submissions...</p>";
+
+    try {
+        const res = await fetch("http://127.0.0.1:5000/api/pending-answers");
+        const data = await res.json();
+
+        if (res.ok && data.pending.length) {
+            grid.innerHTML = data.pending.map(sub => `
+                <div class="submission-card" onclick="selectSubmission('${sub.roll_number}', '${sub.student}', '${sub.exam_name}', '${sub.subject}', '${(sub.file_urls && sub.file_urls[0]) || ''}')">
+                    <h4>${sub.exam_name} - ${sub.subject}</h4>
+                    <p><b>Roll:</b> ${sub.roll_number}</p>
+                    <p><b>Student:</b> ${sub.student}</p>
+                    <span class="badge badge-pending">Pending ⏳</span>
+                </div>
+            `).join("");
+        } else {
+            grid.innerHTML = "<p>✅ All submissions evaluated!</p>";
+        }
+    } catch (err) {
+        grid.innerHTML = "<p>⚠️ Failed to load pending submissions.</p>";
+    }
+}
+
+// Select a submission for evaluation
+function selectSubmission(roll, student, exam, subject, fileUrl) {
+    document.getElementById("studentName").textContent = student;
+    document.getElementById("examName").textContent = `${exam} (${subject})`;
+    document.getElementById("previewPlaceholder").innerHTML =
+        fileUrl ? `<iframe src="${fileUrl}" width="100%" height="400px"></iframe>` : "No preview available.";
+
+    const btn = document.getElementById("startEvaluationBtn");
+    btn.dataset.roll = roll;
+    document.getElementById("evaluationStatus").innerHTML = "";
+}
+
+// Start Evaluation (mock AI process)
+document.getElementById("startEvaluationBtn")?.addEventListener("click", async e => {
+    const roll = e.target.dataset.roll;
+    if (!roll) return alert("⚠️ Please select a submission first.");
+
+    const statusDiv = document.getElementById("evaluationStatus");
+    statusDiv.innerHTML = "🧠 Running AI Evaluation... Please wait...";
+
+    try {
+        const res = await fetch(`http://127.0.0.1:5000/api/start-evaluation/${roll}`, { method: "POST" });
+        const data = await res.json();
+
+        if (res.ok) {
+            statusDiv.innerHTML = `✅ ${data.message}<br>Marks: ${data.marks_obtained}/100<br>Feedback: ${data.feedback}`;
+            await loadPendingSubmissions(); // Refresh list
+        } else {
+            statusDiv.innerHTML = `❌ ${data.error}`;
+        }
+    } catch {
+        statusDiv.innerHTML = "⚠️ Evaluation failed.";
+    }
+});
+
+
+// ========== TEACHER SEARCH + FILTER ==========
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("submissionSearch");
+    const filterSelect = document.getElementById("submissionFilter");
+    const submissionsContainer = document.getElementById("studentSubmissions");
+
+    if (searchInput && filterSelect && submissionsContainer) {
+        searchInput.addEventListener("input", filterSubmissions);
+        filterSelect.addEventListener("change", filterSubmissions);
+    }
+
+    function filterSubmissions() {
+        const searchText = searchInput.value.toLowerCase();
+        const filter = filterSelect.value;
+
+        document.querySelectorAll(".submission-card").forEach(card => {
+            const text = card.textContent.toLowerCase();
+            const isEvaluated = card.innerHTML.includes("Evaluated ✅");
+            const isPending = card.innerHTML.includes("Pending ⏳");
+
+            const matchesSearch = text.includes(searchText);
+            const matchesFilter =
+                filter === "all" ||
+                (filter === "evaluated" && isEvaluated) ||
+                (filter === "pending" && isPending);
+
+            card.style.display = matchesSearch && matchesFilter ? "block" : "none";
+        });
+    }
+});
 
 // INIT
 document.addEventListener("DOMContentLoaded", () => {

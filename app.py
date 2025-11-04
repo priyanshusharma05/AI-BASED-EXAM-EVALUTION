@@ -204,10 +204,49 @@ def get_all_student_submissions():
     return jsonify({"submissions": submissions}), 200
 
 
-# ---------- TEACHER EVALUATION ----------
+# ---------- TEACHER: FETCH ALL PENDING ANSWERS ----------
+@app.route("/api/pending-answers", methods=["GET"])
+def get_pending_answers():
+    """Return all answer sheets pending evaluation"""
+    submissions = list(uploads.find({"type": "answer_sheet", "status": "pending"}, {"_id": 0}))
+    submissions.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    return jsonify({"pending": submissions}), 200
+
+
+# ---------- TEACHER: START AI EVALUATION (Mock for now) ----------
+@app.route("/api/start-evaluation/<roll_number>", methods=["POST"])
+def start_evaluation(roll_number):
+    """Mock AI Evaluation (to be replaced with ML model later)"""
+    submission = uploads.find_one({"roll_number": roll_number, "status": "pending"})
+    if not submission:
+        return jsonify({"error": "Submission not found or already evaluated"}), 404
+
+    # ⚙️ Mock Evaluation (replace this with your ML model later)
+    marks = 60 + (hash(roll_number) % 40)  # pseudo-random score
+    feedback = "Good effort! Improve handwriting and conceptual explanations."
+
+    uploads.update_one(
+        {"roll_number": roll_number},
+        {"$set": {
+            "status": "evaluated",
+            "marks_obtained": marks,
+            "total_marks": 100,
+            "feedback": feedback,
+            "evaluated_on": datetime.datetime.now().isoformat()
+        }}
+    )
+
+    return jsonify({
+        "message": f"✅ Evaluation complete for Roll No {roll_number}",
+        "marks_obtained": marks,
+        "feedback": feedback
+    }), 200
+
+
+# ---------- TEACHER MANUAL EVALUATION ----------
 @app.route("/api/evaluate-submission", methods=["POST"])
 def evaluate_submission():
-    """Allows teacher to mark a student's submission as evaluated with marks"""
+    """Allows teacher to manually mark a student's submission as evaluated"""
     data = request.get_json()
     if not data:
         return jsonify({"error": "No evaluation data received"}), 400
@@ -238,7 +277,7 @@ def evaluate_submission():
     return jsonify({"message": "✅ Submission evaluated successfully"}), 200
 
 
-# ---------- SERVE FILES (Dynamic Path Handling) ----------
+# ---------- SERVE FILES ----------
 @app.route("/uploads/<path:filepath>")
 def serve_file(filepath):
     """Serve uploaded files dynamically regardless of nesting depth"""
@@ -254,6 +293,26 @@ def serve_file(filepath):
     directory = os.path.dirname(safe_path)
     filename = os.path.basename(safe_path)
     return send_from_directory(directory, filename)
+
+# ---------- DASHBOARD STATS ----------
+@app.route("/api/dashboard-stats", methods=["GET"])
+def dashboard_stats():
+    """Return overall stats for teacher dashboard"""
+    try:
+        total_exams = uploads.count_documents({"type": "answer_key"})
+        total_submissions = uploads.count_documents({"type": "answer_sheet"})
+        evaluated = uploads.count_documents({"type": "answer_sheet", "status": "evaluated"})
+        pending = uploads.count_documents({"type": "answer_sheet", "status": "pending"})
+
+        return jsonify({
+            "total_exams": total_exams,
+            "total_submissions": total_submissions,
+            "evaluated": evaluated,
+            "pending": pending
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 # ---------- RUN ----------
