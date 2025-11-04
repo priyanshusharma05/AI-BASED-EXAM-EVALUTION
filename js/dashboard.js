@@ -1,215 +1,258 @@
-// ------------------------------
-// DASHBOARD.JS (Unified for Teacher & Student)
-// ------------------------------
+// ===============================
+// DASHBOARD.JS (Student + Teacher)
+// ===============================
 
-// ==============================
 // SECTION SWITCHING
-// ==============================
 function showSection(sectionId) {
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.remove('active');
-    });
-    document.getElementById(sectionId).classList.add('active');
+    document.querySelectorAll(".content-section").forEach(section => section.classList.remove("active"));
+    document.getElementById(sectionId)?.classList.add("active");
 
     const titles = {
-        'overview': 'Dashboard Overview',
-        'upload-key': 'Upload Answer Key',
-        'submissions': 'View Submissions',
-        'evaluate': 'Evaluate Sheets',
-        'review': 'Review Results',
-        'upload': 'Upload Answer Sheet',
-        'results': 'View Results',
-        'performance': 'Performance Analytics'
+        overview: "Dashboard Overview",
+        upload: "Upload Answer Sheet",
+        results: "View Results",
+        performance: "Performance Analytics",
+        "upload-key": "Upload Answer Key",
+        submissions: "View Submissions"
     };
-    const titleElement = document.getElementById('section-title');
-    if (titleElement) titleElement.textContent = titles[sectionId] || 'Dashboard Overview';
+    document.getElementById("section-title").textContent = titles[sectionId] || "Dashboard Overview";
+
+    // If switching to overview, refresh stats dynamically
+    if (sectionId === "overview") loadDashboardStats();
 }
 
-// ==============================
-// HELPER: Update Upload Status
-// ==============================
-function updateStatus(containerId, message, success = true) {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = `
-            <div class="upload-status ${success ? 'success' : 'error'}">
-                ${success ? '✅' : '❌'} ${message}
-            </div>
-        `;
-        setTimeout(() => { container.innerHTML = ''; }, 5000);
-    }
+// STATUS DISPLAY
+function updateStatus(id, message, success = true) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = `<div class="upload-status ${success ? "success" : "error"}">${success ? "✅" : "❌"} ${message}</div>`;
+    setTimeout(() => (el.innerHTML = ""), 5000);
 }
 
-// ==============================
-// TEACHER: UPLOAD ANSWER KEY
-// ==============================
-const answerKeyForm = document.getElementById('answerKeyForm');
+// ========== TEACHER UPLOAD KEY ==========
+const answerKeyForm = document.getElementById("answerKeyForm");
 if (answerKeyForm) {
-    const answerKeyFileInput = document.getElementById('answerKeyFile');
-    const preview = document.getElementById('answerKeyPreview');
-    const previewImage = document.getElementById('answerKeyImage');
-    const previewFileName = document.getElementById('answerKeyFileName');
-
-    answerKeyFileInput.addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            preview.style.display = 'block';
-            previewFileName.textContent = file.name;
-
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = e => previewImage.src = e.target.result;
-                reader.readAsDataURL(file);
-            } else {
-                previewImage.src = '';
-            }
-        }
-    });
-
-    answerKeyForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const file = answerKeyFileInput.files[0];
-        if (!file) return alert('Please select a file to upload!');
+    answerKeyForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const file = document.getElementById("answerKeyFile").files[0];
+        if (!file) return updateStatus("teacherUploadStatus", "No file selected", false);
 
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('teacher', localStorage.getItem('userEmail') || 'Unknown Teacher');
+        formData.append("file", file);
+        formData.append("teacher", localStorage.getItem("userEmail") || "Unknown");
 
-        try {
-            const response = await fetch('http://127.0.0.1:5000/api/upload-key', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                updateStatus('teacherUploadStatus', data.message, true);
-                answerKeyForm.reset();
-                preview.style.display = 'none';
-                previewImage.src = '';
-                previewFileName.textContent = '';
-                loadStudentSubmissions();
-            } else {
-                updateStatus('teacherUploadStatus', data.error || 'Upload failed', false);
-            }
-        } catch (error) {
-            updateStatus('teacherUploadStatus', 'Error connecting to server.', false);
-        }
+        const res = await fetch("http://127.0.0.1:5000/api/upload-key", { method: "POST", body: formData });
+        const data = await res.json();
+        updateStatus("teacherUploadStatus", res.ok ? data.message : data.error, res.ok);
+        if (res.ok) loadStudentSubmissions();
     });
 }
 
-// ==============================
-// STUDENT: UPLOAD ANSWER SHEET
-// ==============================
-const answerSheetForm = document.getElementById('answerSheetForm');
+// ========== STUDENT UPLOAD ==========
+const answerSheetForm = document.getElementById("answerSheetForm");
 if (answerSheetForm) {
-    const answerSheetFileInput = document.getElementById('answerSheetFile');
-    const previewContainer = document.getElementById('answerSheetPreview');
-    const imageGallery = document.getElementById('imageGallery');
+    const fileInput = document.getElementById("answerSheetFile");
+    const previewContainer = document.getElementById("answerSheetPreview");
+    const gallery = document.getElementById("imageGallery");
 
-    // Preview uploaded files
-    answerSheetFileInput.addEventListener('change', function() {
-        imageGallery.innerHTML = '';
-        const files = Array.from(this.files);
-        if (files.length > 0) {
-            previewContainer.style.display = 'block';
-            files.forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.classList.add('preview-thumb');
-                        imageGallery.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        } else {
-            previewContainer.style.display = 'none';
-        }
+    fileInput.addEventListener("change", () => {
+        gallery.innerHTML = "";
+        const files = Array.from(fileInput.files);
+        if (!files.length) return (previewContainer.style.display = "none");
+
+        previewContainer.style.display = "block";
+        files.forEach(f => {
+            const div = document.createElement("div");
+            div.classList.add("preview-item");
+            if (f.type.startsWith("image/")) {
+                const img = document.createElement("img");
+                img.classList.add("preview-thumb");
+                img.src = URL.createObjectURL(f);
+                div.appendChild(img);
+            } else {
+                div.textContent = `📄 ${f.name}`;
+                div.classList.add("pdf-preview");
+            }
+            gallery.appendChild(div);
+        });
     });
 
-    // Submit upload form
-    answerSheetForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const files = answerSheetFileInput.files;
-        if (!files.length) return alert('Please select files to upload!');
+    answerSheetForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const files = Array.from(fileInput.files);
+        if (!files.length) return updateStatus("studentUploadStatus", "Please select files", false);
 
         const formData = new FormData();
-        Array.from(files).forEach(file => formData.append('files[]', file));
+        files.forEach(f => formData.append("files", f));
+        formData.append("exam_name", document.getElementById("examDropdown").value);
+        formData.append("subject", document.getElementById("subjectDropdown").value);
+        formData.append("roll_number", document.getElementById("rollNumber").value);
+        formData.append("notes", document.getElementById("notes").value);
+        formData.append("answer_sheet_type", document.getElementById("answerSheetTypeDropdown").value);
+        formData.append("student", localStorage.getItem("userEmail") || "Unknown");
 
-        // ✅ Collect all student input data
-        formData.append('exam_name', document.querySelector('input[placeholder="e.g., Mathematics Final Exam"]')?.value || '');
-        formData.append('subject', document.querySelector('input[placeholder="e.g., Mathematics"]')?.value || '');
-        formData.append('roll_number', document.querySelector('input[placeholder="e.g., 2024001"]')?.value || '');
-        formData.append('notes', document.querySelector('textarea[placeholder*="instructions"]')?.value || '');
+        const res = await fetch("http://127.0.0.1:5000/api/upload-answer", { method: "POST", body: formData });
+        const data = await res.json();
+        updateStatus("studentUploadStatus", res.ok ? data.message : data.error, res.ok);
 
-        // ✅ Get answer sheet type from dropdown
-        const answerSheetType = document.getElementById('answerSheetType')?.value || 'Descriptive';
-        formData.append('answer_sheet_type', answerSheetType);
-
-        // ✅ Attach student email
-        formData.append('student', localStorage.getItem('userEmail') || 'Unknown Student');
-
-        try {
-            const response = await fetch('http://127.0.0.1:5000/api/upload-answer', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                updateStatus('studentUploadStatus', data.message, true);
-                answerSheetForm.reset();
-                previewContainer.style.display = 'none';
-                imageGallery.innerHTML = '';
-            } else {
-                updateStatus('studentUploadStatus', data.error || 'Upload failed', false);
-            }
-        } catch (error) {
-            updateStatus('studentUploadStatus', 'Error connecting to server.', false);
+        if (res.ok) {
+            await loadStudentResults();
+            await loadDashboardStats(); // ✅ Update stats instantly after upload
+            showSection("results");
         }
     });
 }
 
-// ==============================
-// TEACHER: VIEW STUDENT SUBMISSIONS
-// ==============================
-async function loadStudentSubmissions() {
-    const container = document.getElementById('studentSubmissions');
-    if (!container) return;
+// ========== LOAD STUDENT RESULTS ==========
+async function loadStudentResults() {
+    const grid = document.querySelector(".results-grid");
+    if (!grid) return;
+    const studentEmail = localStorage.getItem("userEmail");
+    grid.innerHTML = "<p>⏳ Loading submissions...</p>";
 
     try {
-        const res = await fetch('http://127.0.0.1:5000/api/student-submissions');
+        const res = await fetch(`http://127.0.0.1:5000/api/get-student-submissions?student=${studentEmail}`);
         const data = await res.json();
 
-        if (res.ok && data.submissions.length > 0) {
-            container.innerHTML = data.submissions.map(sub => `
-                <div class="submission-card">
-                    <h4>${sub.exam_name || 'Untitled Exam'} - ${sub.subject || 'N/A'}</h4>
-                    <p><strong>Roll No:</strong> ${sub.roll_number || 'Unknown'}</p>
-                    <p><strong>Type:</strong> ${sub.answer_sheet_type || 'Descriptive'}</p>
-                    <p><strong>Notes:</strong> ${sub.notes || 'None'}</p>
-                    <div class="file-list">
-                        ${sub.file_urls.map(url => `
-                            <a href="${url}" target="_blank" class="file-link">📄 View File</a>
-                        `).join('')}
+        if (res.ok && data.submissions.length) {
+            grid.innerHTML = data.submissions.map(sub => {
+                const isEvaluated = sub.status === "evaluated";
+                const marksText = isEvaluated
+                    ? `<div class="exam-score">
+                        <span class="score-large">${sub.marks_obtained}</span>
+                        <span class="score-total">/ ${sub.total_marks || 100}</span>
+                       </div>`
+                    : `<div class="exam-score"><span class="score-pending">⏳ Pending</span></div>`;
+
+                const feedbackText = isEvaluated && sub.feedback
+                    ? `<div class="feedback-text"><strong>Feedback:</strong> ${sub.feedback}</div>`
+                    : "";
+
+                const statusBadge = `<span class="badge ${isEvaluated ? "badge-evaluated" : "badge-pending"}">
+                                        ${isEvaluated ? "Evaluated ✅" : "Pending ⏳"}
+                                     </span>`;
+
+                return `
+                    <div class="exam-result-card card">
+                        <div class="exam-header">
+                            <h4>${sub.exam_name} - ${sub.subject}</h4>
+                            ${statusBadge}
+                        </div>
+                        ${marksText}
+                        <div class="exam-details">
+                            <p><strong>Roll No:</strong> ${sub.roll_number}</p>
+                            <p><strong>Type:</strong> ${sub.answer_sheet_type}</p>
+                            <p><strong>Uploaded:</strong> ${new Date(sub.timestamp).toLocaleString()}</p>
+                        </div>
+                        ${feedbackText}
+                        <div class="file-list">
+                            ${(sub.file_urls || []).map(url => `
+                                <a href="${url}" target="_blank" class="file-link">
+                                    ${url.endsWith(".pdf") ? "📄 PDF File" : "🖼️ Image"}
+                                </a>`).join("<br>")}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join("");
         } else {
-            container.innerHTML = '<p>No student submissions yet.</p>';
+            grid.innerHTML = "<p>❌ No submissions found.</p>";
         }
-    } catch (error) {
-        container.innerHTML = '<p>⚠️ Failed to load submissions.</p>';
+    } catch (err) {
+        console.error(err);
+        grid.innerHTML = "<p>⚠️ Failed to load submissions.</p>";
     }
 }
 
-// Auto-load student submissions for teacher
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('studentSubmissions')) {
-        loadStudentSubmissions();
+// ========== DASHBOARD OVERVIEW STATS ==========
+async function loadDashboardStats() {
+    const studentEmail = localStorage.getItem("userEmail");
+    const examsTakenEl = document.querySelector("#examsTaken");
+    const evaluatedEl = document.querySelector("#evaluatedCount");
+    const pendingEl = document.querySelector("#pendingCount");
+    const averageScoreEl = document.querySelector("#averageScore");
+
+    try {
+        const res = await fetch(`http://127.0.0.1:5000/api/get-student-submissions?student=${studentEmail}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.submissions.length) {
+            updateStatUI(0, 0, 0, 0);
+            return;
+        }
+
+        const submissions = data.submissions;
+        const totalExams = submissions.length;
+        const evaluated = submissions.filter(s => s.status === "evaluated");
+        const pending = submissions.filter(s => s.status !== "evaluated");
+
+        const avgScore =
+            evaluated.length > 0
+                ? (
+                    evaluated.reduce((sum, s) => sum + (s.marks_obtained || 0), 0) /
+                    evaluated.reduce((sum, s) => sum + (s.total_marks || 100), 0)
+                  ) * 100
+                : 0;
+
+        updateStatUI(totalExams, evaluated.length, pending.length, avgScore);
+    } catch (err) {
+        console.error("Failed to load dashboard stats:", err);
+        updateStatUI(0, 0, 0, 0);
     }
+
+    // Helper to animate number updates
+    function updateStatUI(total, evaluated, pending, avgScore) {
+        animateValue(examsTakenEl, total);
+        animateValue(evaluatedEl, evaluated);
+        animateValue(pendingEl, pending);
+        averageScoreEl.textContent = `${avgScore.toFixed(1)}%`;
+    }
+}
+
+// ========== COUNT-UP ANIMATION ==========
+function animateValue(el, endValue) {
+    if (!el) return;
+    const duration = 800;
+    const startValue = parseInt(el.textContent) || 0;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const value = Math.floor(startValue + (endValue - startValue) * progress);
+        el.textContent = value;
+        if (progress < 1) requestAnimationFrame(update);
+    }
+
+    requestAnimationFrame(update);
+}
+
+// ========== TEACHER VIEW ==========
+async function loadStudentSubmissions() {
+    const container = document.getElementById("studentSubmissions");
+    if (!container) return;
+    container.innerHTML = "<p>⏳ Loading submissions...</p>";
+
+    try {
+        const res = await fetch("http://127.0.0.1:5000/api/student-submissions");
+        const data = await res.json();
+
+        if (res.ok && data.submissions.length) {
+            container.innerHTML = data.submissions.map(sub => `
+                <div class="submission-card">
+                    <h4>${sub.exam_name} - ${sub.subject}</h4>
+                    <p><b>Roll:</b> ${sub.roll_number}</p>
+                    <div>${(sub.file_urls || []).map(u => `<a href="${u}" target="_blank">${u.endsWith(".pdf") ? "📄" : "🖼️"}</a>`).join(" ")}</div>
+                </div>
+            `).join("");
+        } else container.innerHTML = "<p>No student submissions yet.</p>";
+    } catch {
+        container.innerHTML = "<p>⚠️ Failed to load submissions.</p>";
+    }
+}
+
+// INIT
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("studentSubmissions")) loadStudentSubmissions();
+    if (document.querySelector(".results-grid")) loadStudentResults();
+    if (document.getElementById("overview")) loadDashboardStats(); // ✅ Added auto load for stats
 });
