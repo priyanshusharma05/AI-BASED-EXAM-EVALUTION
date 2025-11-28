@@ -42,7 +42,7 @@ if (signupForm) {
         const fullname = document.getElementById("fullname").value.trim();
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
-        const selectedRole = document.querySelector(".role-card.selected")?.dataset.role;
+        const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
 
         if (!fullname || !email || !password || !selectedRole) {
             showAlert("⚠️ Please fill all fields and select a role.", false);
@@ -88,7 +88,7 @@ if (loginForm) {
 
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
-        const selectedRole = document.querySelector(".role-card.selected")?.dataset.role;
+        const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
 
         if (!email || !password || !selectedRole) {
             showAlert("⚠️ Please fill in all fields and select your role.", false);
