@@ -21,4 +21,4 @@ uploads = db['uploads']
 
 # Backwards-compatible aliases (some modules used submissions/results)
 submissions = uploads
-results = db.get('results', db['uploads'])
+results = db['results']
