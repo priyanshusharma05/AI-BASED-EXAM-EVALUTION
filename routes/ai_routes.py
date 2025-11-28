@@ -227,6 +227,8 @@ async def ai_evaluate_submission(roll_number: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Evaluation failed: {str(e)}"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         with open("error.log", "w", encoding="utf-8") as f:
