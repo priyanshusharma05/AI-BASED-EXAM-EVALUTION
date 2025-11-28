@@ -95,7 +95,7 @@ async def ai_evaluate_submission(roll_number: str):
         "roll_number": roll_number,
         "status": "pending",
         "type": "answer_sheet"
-    })
+    }, sort=[("timestamp", -1)])
     
     if not submission:
         raise HTTPException(
