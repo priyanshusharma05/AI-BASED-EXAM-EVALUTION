@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 
 # Add the extraction model directory to Python path
-EXTRACTION_DIR = Path(__file__).parent.parent.parent / "Final_Model_Descriptive" / "Extraction_modelanswers"
+EXTRACTION_DIR = Path(__file__).parent.parent / "Final_Model_Descriptive" / "Extraction_modelanswers"
 sys.path.insert(0, str(EXTRACTION_DIR))
 
 try:

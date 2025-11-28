@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 # Add the evaluation model directory to Python path
-EVALUATION_DIR = Path(__file__).parent.parent.parent / "Final_Model_Descriptive"
+EVALUATION_DIR = Path(__file__).parent.parent / "Final_Model_Descriptive"
 sys.path.insert(0, str(EVALUATION_DIR))
 
 try:
