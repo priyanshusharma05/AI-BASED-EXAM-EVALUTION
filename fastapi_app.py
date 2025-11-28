@@ -335,7 +335,7 @@ async def get_student_submissions(
     if roll_number:
         query["roll_number"] = roll_number
     if student:
-        query["student"] = student
+        query["student"] = {"$regex": f"^{student}$", "$options": "i"}
     
     submissions = list(uploads.find(query, {"_id": 0}))
     submissions.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
