@@ -62,6 +62,7 @@ def extract_student_answers(pdf_path: str) -> dict:
         # Get API key from environment
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
+            print("❌ GEMINI_API_KEY not found in environment variables")
             raise ExtractionError(
                 "GEMINI_API_KEY not set in environment variables. "
                 "Please set it before using extraction features."
@@ -122,12 +123,14 @@ def extract_question_paper(pdf_path: str, model: str = "gemini-2.5-flash") -> di
         # Get API key from environment
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
+            print("❌ GEMINI_API_KEY not found in environment variables")
             raise ExtractionError(
                 "GEMINI_API_KEY not set in environment variables. "
                 "Please set it before using extraction features."
             )
         
         # Extract questions and generate model answers
+        print(f"🔹 Requesting extraction with model: {model}")
         result = extract_questions_from_pdf(pdf_path, api_key, model)
         
         if not result:

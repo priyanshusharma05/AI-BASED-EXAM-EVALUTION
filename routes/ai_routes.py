@@ -217,6 +217,7 @@ async def ai_evaluate_submission(roll_number: str):
         })
         
     except ExtractionError as e:
+        logger.error(f"Extraction failed for roll number {roll_number}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Extraction failed: {str(e)}"

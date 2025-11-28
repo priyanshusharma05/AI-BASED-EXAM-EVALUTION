@@ -98,7 +98,9 @@ def extract_answers_from_pdf(pdf_path: str, api_key: str) -> dict:
         raise FileNotFoundError(f"File not found at {pdf_path}")
 
     # Gemini 2.5 Flash endpoint
-    gemini_endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    model_name = "gemini-2.5-flash"
+    print(f"🔹 Using Gemini Model for Answers: {model_name}")
+    gemini_endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
 
     # Read and encode PDF file
     with open(pdf_path, "rb") as f:
@@ -329,7 +331,8 @@ def extract_questions_from_pdf(pdf_path: str, api_key: str, model: str = "gemini
     Complete pipeline to extract questions and generate model answers.
     Includes fallback to gemini-1.5-flash if primary model fails.
     """
-    print(f"📄 Extracting questions from: {pdf_path} using {model}")
+    print(f"📄 Extracting questions from: {pdf_path}")
+    print(f"🔹 Using Gemini Model for Questions: {model}")
     
     # Only use the requested model (gemini-2.5-flash)
     extracted_text = extract_text_from_pdf_with_gemini(pdf_path, api_key, model)
