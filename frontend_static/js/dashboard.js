@@ -566,6 +566,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // INIT
 document.addEventListener("DOMContentLoaded", () => {
+    // Auth Check
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) {
+        console.warn("⚠️ No user session found. Redirecting to login.");
+        window.location.href = "login.html";
+        return;
+    }
+    console.log("👤 Logged in as:", userEmail);
+
     if (document.getElementById("studentSubmissions")) loadStudentSubmissions();
     if (document.querySelector(".results-grid")) loadStudentResults();
     if (document.getElementById("overview")) loadDashboardStats(); // ✅ Added auto load for stats
