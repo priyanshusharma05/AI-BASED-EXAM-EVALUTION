@@ -41,7 +41,7 @@ body.dark-mode .auth-left {
 }
 
 .auth-subtitle {
-  color: #64748b;
+  color: #000000;
   font-size: 18px;
   margin-bottom: 40px;
 }
@@ -124,7 +124,11 @@ body.dark-mode .role-name {
 .auth-footer {
   text-align: center;
   margin-top: 24px;
-  color: #64748b;
+  color: var(--text-light);
+}
+
+body.dark-mode .auth-footer {
+  color: var(--text-dark);
 }
 
 .auth-footer a {

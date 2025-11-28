@@ -29,8 +29,12 @@ body.dark-mode .sidebar {
 }
 
 .user-role {
-  color: #64748b;
+  color: var(--text-light);
   font-size: 14px;
+}
+
+body.dark-mode .user-role {
+  color: var(--text-dark);
 }
 
 .sidebar-nav {
@@ -140,8 +144,12 @@ body.dark-mode .stat-info h3 {
 }
 
 .stat-info p {
-  color: #64748b;
+  color: var(--text-light);
   font-size: 14px;
+}
+
+body.dark-mode .stat-info p {
+  color: var(--text-dark);
 }
 
 .recent-activity,
@@ -198,8 +206,12 @@ body.dark-mode .result-title {
 
 .activity-meta,
 .result-meta {
-  color: #64748b;
+  color: var(--text-light);
   font-size: 14px;
+}
+
+body.dark-mode .result-meta {
+  color: var(--text-dark);
 }
 
 .result-score-badge {
@@ -255,9 +267,13 @@ body.dark-mode .upload-placeholder {
 }
 
 .upload-hint {
-  color: #64748b;
+  color: var(--text-light);
   font-size: 14px;
   margin-top: 8px;
+}
+
+body.dark-mode .upload-hint {
+  color: var(--text-dark);
 }
 
 .file-preview {
@@ -343,9 +359,13 @@ body.dark-mode .exam-header h4 {
 }
 
 .submission-info {
-  color: #64748b;
+  color: var(--text-light);
   font-size: 14px;
   margin-bottom: 8px;
+}
+
+body.dark-mode .submission-info {
+  color: var(--text-dark);
 }
 
 .exam-score {
@@ -364,7 +384,11 @@ body.dark-mode .exam-header h4 {
 
 .score-total {
   font-size: 24px;
-  color: #64748b;
+  color: var(--text-light);
+}
+
+body.dark-mode .score-total {
+  color: var(--text-dark);
 }
 
 .score-pending {
@@ -377,9 +401,13 @@ body.dark-mode .exam-header h4 {
 }
 
 .exam-details p {
-  color: #64748b;
+  color: var(--text-light);
   font-size: 14px;
   margin-bottom: 4px;
+}
+
+body.dark-mode .exam-details p {
+  color: var(--text-dark);
 }
 
 .evaluate-content {
@@ -464,7 +492,11 @@ body.dark-mode .progress-bar {
 
 #progressText {
   text-align: center;
-  color: #64748b;
+  color: var(--text-light);
+}
+
+body.dark-mode #progressText {
+  color: var(--text-dark);
 }
 
 .evaluation-result {
@@ -504,9 +536,13 @@ body.dark-mode .result-summary {
 
 .result-item label {
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-light);
   display: block;
   margin-bottom: 4px;
+}
+
+body.dark-mode .result-item label {
+  color: var(--text-dark);
 }
 
 .result-item span {
@@ -571,8 +607,12 @@ body.dark-mode .question-header {
 }
 
 .ai-feedback {
-  color: #64748b;
+  color: var(--text-light);
   font-size: 14px;
+}
+
+body.dark-mode .ai-feedback {
+  color: var(--text-dark);
 }
 
 .review-actions {
@@ -602,9 +642,13 @@ body.dark-mode .question-header {
 }
 
 .performance-stat h4 {
-  color: #64748b;
+  color: var(--text-light);
   margin-bottom: 12px;
   font-size: 16px;
+}
+
+body.dark-mode .performance-stat h4 {
+  color: var(--text-dark);
 }
 
 .stat-value {
@@ -675,8 +719,12 @@ body.dark-mode .feedback-section h4 {
 }
 
 .feedback-section p {
-  color: #64748b;
+  color: var(--text-light);
   margin-bottom: 8px;
+}
+
+body.dark-mode .feedback-section p {
+  color: var(--text-dark);
 }
 
 .question-feedback {
@@ -725,3 +773,174 @@ body.dark-mode .question-feedback {
     grid-template-columns: 1fr;
   }
 }
+/* ===============================
+   View Submissions Responsive Layout
+   =============================== */
+
+.submissions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.submissions-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.submission-search {
+  flex: 1;
+  min-width: 240px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  transition: 0.3s ease;
+}
+
+.submission-search:focus {
+  border-color: var(--accent-color, #6c63ff);
+  outline: none;
+}
+
+.submission-filter {
+  min-width: 180px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid #ddd;
+  font-size: 1rem;
+  transition: 0.3s ease;
+}
+
+.submission-filter:focus {
+  border-color: var(--accent-color, #6c63ff);
+  outline: none;
+}
+
+/* Responsive Behavior */
+@media (max-width: 768px) {
+  .submissions-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .submission-search,
+  .submission-filter {
+    width: 100%;
+  }
+}
+.evaluate-container {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.evaluate-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: space-between;
+}
+
+.sheet-preview, .evaluation-panel {
+  flex: 1;
+  min-width: 320px;
+}
+
+.preview-placeholder {
+  border: 2px dashed var(--border-light);
+  border-radius: 12px;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-light);
+}
+
+body.dark-mode .preview-placeholder {
+  border-color: var(--border-dark);
+  color: var(--text-dark);
+}
+
+.evaluation-info {
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--bg-light);
+}
+
+.submission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.submission-card {
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--bg-light);
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.submission-card:hover {
+  background: rgba(99, 102, 241, 0.05);
+  transform: translateY(-2px);
+}
+/* ===== Responsive Stat Cards ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem;
+  border-radius: 12px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  opacity: 0.85;
+}
+
+.stat-info h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.stat-info p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+  .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .stat-info h3 {
+    font-size: 1.4rem;
+  }
+}
+
+

@@ -42,7 +42,7 @@ if (signupForm) {
         const fullname = document.getElementById("fullname").value.trim();
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
-        const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+        const selectedRole = document.querySelector(".role-card.selected")?.dataset.role;
 
         if (!fullname || !email || !password || !selectedRole) {
             showAlert("⚠️ Please fill all fields and select a role.", false);
@@ -50,7 +50,7 @@ if (signupForm) {
         }
 
         try {
-            const response = await fetch(`${window.API_BASE}/api/signup`, {
+            const response = await fetch(`${window.API_BASE_URL}/api/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fullname, email, password, role: selectedRole }),
@@ -70,7 +70,7 @@ if (signupForm) {
             }
         } catch (error) {
             console.error("Error:", error);
-            showAlert("🚫 Server not reachable. Please ensure backend is running.", false);
+            showAlert("🚫 Server not reachable. Please ensure Flask is running on port 5000.", false);
         }
     });
 }
@@ -83,12 +83,10 @@ const loginForm = document.getElementById("loginForm");
 if (loginForm) {
     loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
-        console.log("Debug: API_BASE is", window.API_BASE);
-        // alert("Debug: API_BASE is " + window.API_BASE); // Uncomment if needed for visual confirmation
 
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
-        const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+        const selectedRole = document.querySelector(".role-card.selected")?.dataset.role;
 
         if (!email || !password || !selectedRole) {
             showAlert("⚠️ Please fill in all fields and select your role.", false);
@@ -96,7 +94,7 @@ if (loginForm) {
         }
 
         try {
-            const response = await fetch(`${window.API_BASE}/api/login`, {
+            const response = await fetch(`${window.API_BASE_URL}/api/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password, role: selectedRole }),
@@ -110,18 +108,15 @@ if (loginForm) {
                 localStorage.setItem("userEmail", email);
                 localStorage.setItem("userRole", selectedRole);
 
-                // Use relative redirection for robustness (works on localhost and Vercel)
-                if (selectedRole === 'teacher') {
-                    window.location.href = 'teacher-dashboard.html';
-                } else {
-                    window.location.href = 'student-dashboard.html';
-                }
+                // Client-side redirection to avoid backend URL mismatch
+                const targetPage = selectedRole === "teacher" ? "teacher-dashboard.html" : "student-dashboard.html";
+                setTimeout(() => (window.location.href = targetPage), 1000);
             } else {
                 showAlert(data.error || "❌ Login failed. Please check your credentials.", false);
             }
         } catch (error) {
             console.error("Error:", error);
-            showAlert("🚫 Server not reachable. Please ensure backend is running.", false);
+            showAlert("🚫 Server not reachable. Please ensure Flask is running on port 5000.", false);
         }
     });
 }

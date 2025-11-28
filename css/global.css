@@ -1,21 +1,21 @@
 :root {
-  --primary-color: #6366f1;
-  --primary-dark: #4f46e5;
-  --secondary-color: #8b5cf6;
-  --accent-color: #06b6d4;
+  --primary-color: #210c52;
+  --primary-dark: #000000;
+  --secondary-color: #000000;
+  --accent-color: #030303;
   --bg-light: #ffffff;
   --bg-dark: #0f172a;
   --text-light: #1e293b;
   --text-dark: #f1f5f9;
   --card-light: #ffffff;
-  --card-dark: #1e293b;
+  --card-dark: #32353a;
   --border-light: #e2e8f0;
-  --border-dark: #334155;
+  --border-dark: #3f5068;
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
-  --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-2: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --gradient-1: linear-gradient(135deg, #ffffff 0%, #0f0f0f 100%);
+  --gradient-2: linear-gradient(135deg, #040533 0%, #8b5cf6 100%);
   --gradient-3: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
 }
 
@@ -101,7 +101,7 @@ body.dark-mode .card {
 
 .theme-toggle {
   position: fixed;
-  top: 20px;
+  top: 100px;
   right: 20px;
   background: var(--card-light);
   border: 1px solid var(--border-light);
@@ -230,5 +230,76 @@ body.dark-mode .modal-content {
   
   .card {
     padding: 16px;
+  }
+}
+
+/* TOAST NOTIFICATIONS */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  background: var(--card-light);
+  color: var(--text-light);
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 300px;
+  border-left: 4px solid var(--primary-color);
+  animation: slideInRight 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+body.dark-mode .toast {
+  background: var(--card-dark);
+  color: var(--text-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.toast.success {
+  border-left-color: var(--success);
+}
+
+.toast.error {
+  border-left-color: var(--error);
+}
+
+.toast.info {
+  border-left-color: var(--primary-color);
+}
+
+.toast-icon {
+  font-size: 20px;
+}
+
+.toast-message {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
   }
 }
