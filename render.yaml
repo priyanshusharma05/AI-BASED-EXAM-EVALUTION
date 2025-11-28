@@ -21,8 +21,6 @@ services:
 
 staticSites:
   - name: exam-system-frontend
-    repo: https://github.com/priyanshusharma05/AI-BASED-EXAM-EVALUTION
-    branch: Backend(Kunal)
     rootDir: frontend_static
     staticPublishPath: .
     routes:
