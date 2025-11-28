@@ -83,6 +83,8 @@ const loginForm = document.getElementById("loginForm");
 if (loginForm) {
     loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
+        console.log("Debug: API_BASE is", window.API_BASE);
+        // alert("Debug: API_BASE is " + window.API_BASE); // Uncomment if needed for visual confirmation
 
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
