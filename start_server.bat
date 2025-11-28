@@ -1,0 +1,31 @@
+@echo off
+REM FastAPI Server Startup Script
+REM This script activates the virtual environment and starts the FastAPI server
+
+echo ========================================
+echo Starting FastAPI Backend Server
+echo ========================================
+echo.
+
+REM Activate virtual environment
+cd /d "%~dp0"
+call venv\Scripts\activate
+
+REM Check if GEMINI_API_KEY is set
+if "%GEMINI_API_KEY%"=="" (
+    echo WARNING: GEMINI_API_KEY is not set!
+    echo AI evaluation features will not work without it.
+    echo Set it with: set GEMINI_API_KEY=your_api_key_here
+    echo.
+)
+
+REM Start FastAPI server with uvicorn
+echo Starting server at http://127.0.0.1:5000
+echo Press Ctrl+C to stop the server
+echo.
+echo API Documentation will be available at:
+echo - Swagger UI: http://127.0.0.1:5000/docs
+echo - ReDoc: http://127.0.0.1:5000/redoc
+echo.
+
+uvicorn fastapi_app:app --host 127.0.0.1 --port 5000

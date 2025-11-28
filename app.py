@@ -8,18 +8,14 @@ import datetime
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# ==============================
 # DATABASE SETUP
-# ==============================
 client = MongoClient("mongodb://localhost:27017/")
 db = client["exam_system"]
 users = db["users"]
 exams = db["exams"]
 uploads = db["uploads"]
 
-# ==============================
 # FOLDER CONFIGURATION
-# ==============================
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 KEY_FOLDER = os.path.join(UPLOAD_FOLDER, "keys")
@@ -34,27 +30,25 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
 
 
-# ==============================
 # HELPERS
-# ==============================
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def get_file_url(folder, subfolder, filename):
-    """Return a consistent URL for uploaded files"""
     return f"http://127.0.0.1:5000/uploads/{folder}/{subfolder}/{filename}"
 
 
-# ==============================
+
 # ROUTES
-# ==============================
+
 @app.route("/")
 def home():
-    return "✅ Flask backend for AI Evaluator is running!"
+    return "Flask backend is running!"
 
 
-# ---------- SIGNUP ----------
+#SIGNUP
 @app.route("/api/signup", methods=["POST"])
 def signup():
     data = request.get_json()
@@ -73,7 +67,7 @@ def signup():
     return jsonify({"message": "Signup successful ✅"}), 201
 
 
-# ---------- LOGIN ----------
+#LOGIN
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -100,7 +94,7 @@ def login():
     }), 200
 
 
-# ---------- TEACHER UPLOAD ----------
+#TEACHER UPLOAD
 @app.route("/api/upload-key", methods=["POST"])
 def upload_key():
     if "file" not in request.files:
@@ -126,7 +120,7 @@ def upload_key():
     return jsonify({"error": "Invalid file type"}), 400
 
 
-# ---------- STUDENT UPLOAD ----------
+#STUDENT UPLOAD
 @app.route("/api/upload-answer", methods=["POST"])
 def upload_answer():
     if not request.files.getlist("files"):
@@ -179,7 +173,7 @@ def upload_answer():
     }), 201
 
 
-# ---------- STUDENT DASHBOARD FETCH ----------
+#STUDENT DASHBOARD FETCH
 @app.route("/api/get-student-submissions", methods=["GET"])
 def get_student_submissions():
     roll_number = request.args.get("roll_number", "").strip()
@@ -196,7 +190,7 @@ def get_student_submissions():
     return jsonify({"submissions": submissions}), 200
 
 
-# ---------- TEACHER VIEW ----------
+#TEACHER VIEW 
 @app.route("/api/student-submissions", methods=["GET"])
 def get_all_student_submissions():
     submissions = list(uploads.find({"type": "answer_sheet"}, {"_id": 0}))
@@ -204,7 +198,7 @@ def get_all_student_submissions():
     return jsonify({"submissions": submissions}), 200
 
 
-# ---------- TEACHER: FETCH ALL PENDING ANSWERS ----------
+#TEACHER: FETCH ALL PENDING ANSWERS
 @app.route("/api/pending-answers", methods=["GET"])
 def get_pending_answers():
     """Return all answer sheets pending evaluation"""
@@ -213,7 +207,7 @@ def get_pending_answers():
     return jsonify({"pending": submissions}), 200
 
 
-# ---------- TEACHER: START AI EVALUATION (Mock for now) ----------
+#TEACHER: START AI EVALUATION (DUMMY MoDEL)
 @app.route("/api/start-evaluation/<roll_number>", methods=["POST"])
 def start_evaluation(roll_number):
     """Mock AI Evaluation (to be replaced with ML model later)"""
@@ -221,7 +215,7 @@ def start_evaluation(roll_number):
     if not submission:
         return jsonify({"error": "Submission not found or already evaluated"}), 404
 
-    # ⚙️ Mock Evaluation (replace this with your ML model later)
+    # Mock Evaluation (replace this with ML model later)
     marks = 60 + (hash(roll_number) % 40)  # pseudo-random score
     feedback = "Good effort! Improve handwriting and conceptual explanations."
 
@@ -243,7 +237,7 @@ def start_evaluation(roll_number):
     }), 200
 
 
-# ---------- TEACHER MANUAL EVALUATION ----------
+#TEACHER MANUAL EVALUATION
 @app.route("/api/evaluate-submission", methods=["POST"])
 def evaluate_submission():
     """Allows teacher to manually mark a student's submission as evaluated"""
@@ -277,7 +271,7 @@ def evaluate_submission():
     return jsonify({"message": "✅ Submission evaluated successfully"}), 200
 
 
-# ---------- SERVE FILES ----------
+#SERVE FILES 
 @app.route("/uploads/<path:filepath>")
 def serve_file(filepath):
     """Serve uploaded files dynamically regardless of nesting depth"""
@@ -294,7 +288,7 @@ def serve_file(filepath):
     filename = os.path.basename(safe_path)
     return send_from_directory(directory, filename)
 
-# ---------- DASHBOARD STATS ----------
+# DASHBOARD STATS
 @app.route("/api/dashboard-stats", methods=["GET"])
 def dashboard_stats():
     """Return overall stats for teacher dashboard"""
@@ -315,6 +309,6 @@ def dashboard_stats():
 
 
 
-# ---------- RUN ----------
+#RUN
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
