@@ -29,7 +29,10 @@ from difflib import SequenceMatcher
 import threading
 
 # External dependencies
-from sentence_transformers import SentenceTransformer, util
+# External dependencies
+# from sentence_transformers import SentenceTransformer, util  <-- Moved to lazy load
+from unidecode import unidecode
+import yake
 from unidecode import unidecode
 import yake
 
@@ -172,7 +175,7 @@ _model = None
 _model_lock = threading.Lock()
 
 
-def _get_model(config: dict) -> SentenceTransformer:
+def _get_model(config: dict):
     """Lazy-load sentence transformer model (thread-safe singleton)"""
     global _model
     if _model is None:
@@ -183,6 +186,7 @@ def _get_model(config: dict) -> SentenceTransformer:
                     "model_name",
                     "sentence-transformers/all-MiniLM-L6-v2"
                 )
+                from sentence_transformers import SentenceTransformer
                 _model = SentenceTransformer(model_name)
     return _model
 
@@ -228,6 +232,7 @@ def semantic_similarity(text1: str, text2: str, config: dict) -> float:
     emb1 = model.encode(t1, convert_to_tensor=True)
     emb2 = model.encode(t2, convert_to_tensor=True)
 
+    from sentence_transformers import util
     sim_raw = float(util.cos_sim(emb1, emb2).item())
 
     sem_cfg = config.get("semantic", {})
