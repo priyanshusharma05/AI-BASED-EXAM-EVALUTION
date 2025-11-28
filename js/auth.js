@@ -110,10 +110,11 @@ if (loginForm) {
                 localStorage.setItem("userEmail", email);
                 localStorage.setItem("userRole", selectedRole);
 
-                if (data.redirect) {
-                    setTimeout(() => (window.location.href = data.redirect), 1000);
+                // Use relative redirection for robustness (works on localhost and Vercel)
+                if (selectedRole === 'teacher') {
+                    window.location.href = 'teacher-dashboard.html';
                 } else {
-                    showAlert("⚠️ No redirect URL provided by server.", false);
+                    window.location.href = 'student-dashboard.html';
                 }
             } else {
                 showAlert(data.error || "❌ Login failed. Please check your credentials.", false);
